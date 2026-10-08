@@ -1,0 +1,31 @@
+// Bearbeite hier die Charaktere. "search" wird zum Finden des Bildes über die Jikan API genutzt.
+// Optional: "image": "images/mein-bild.png" für ein eigenes lokales Bild setzen.
+const CHARACTERS = [
+{level:'easy',name:'Pikachu',anime:'Pokémon',search:'Pikachu'},
+{level:'easy',name:'Monkey D. Luffy',anime:'One Piece',search:'Monkey D. Luffy'},
+{level:'easy',name:'Naruto Uzumaki',anime:'Naruto',search:'Naruto Uzumaki'},
+{level:'easy',name:'Son Goku',anime:'Dragon Ball',search:'Son Goku'},
+{level:'easy',name:'Sailor Moon',anime:'Sailor Moon',search:'Usagi Tsukino'},
+{level:'easy',name:'Anya Forger',anime:'Spy × Family',search:'Anya Forger'},
+{level:'easy',name:'Satoru Gojo',anime:'Jujutsu Kaisen',search:'Satoru Gojo'},
+{level:'easy',name:'Tanjiro Kamado',anime:'Demon Slayer',search:'Tanjirou Kamado'},
+{level:'easy',name:'Eren Jäger (Titan)',anime:'Attack on Titan',search:'Eren Yeager',note:'Für die Titanenform ein eigenes Bild hinterlegen.'},
+{level:'medium',name:'Frieren',anime:'Frieren',search:'Frieren'},
+{level:'medium',name:'Power',anime:'Chainsaw Man',search:'Power'},
+{level:'medium',name:'Maomao',anime:'The Apothecary Diaries',search:'Maomao'},
+{level:'medium',name:'Kyojuro Rengoku',anime:'Demon Slayer',search:'Kyoujurou Rengoku'},
+{level:'medium',name:'Reigen Arataka',anime:'Mob Psycho 100',search:'Arataka Reigen'},
+{level:'medium',name:'Okarun (verwandelt)',anime:'Dandadan',search:'Ken Takakura',note:'Für die verwandelte Form ein eigenes Bild hinterlegen.'},
+{level:'medium',name:'Levi Ackerman',anime:'Attack on Titan',search:'Levi Ackerman'},
+{level:'medium',name:'Ryuk',anime:'Death Note',search:'Ryuk'},
+{level:'medium',name:'Mikasa Ackerman',anime:'Attack on Titan',search:'Mikasa Ackerman'},
+{level:'hard',name:'Kishibe',anime:'Chainsaw Man',search:'Kishibe'},
+{level:'hard',name:'Shoko Ieiri',anime:'Jujutsu Kaisen',search:'Shouko Ieiri'},
+{level:'hard',name:'Fern',anime:'Frieren',search:'Fern'},
+{level:'hard',name:'Shizuku Murasaki',anime:'Hunter × Hunter',search:'Shizuku Murasaki'},
+{level:'hard',name:'Mumen Rider',anime:'One Punch Man',search:'Mumen Rider'},
+{level:'hard',name:'Gabi Braun',anime:'Attack on Titan',search:'Gabi Braun'},
+{level:'hard',name:'Kobeni Higashiyama',anime:'Chainsaw Man',search:'Kobeni Higashiyama'},
+{level:'hard',name:'Pieck Finger',anime:'Attack on Titan',search:'Pieck Finger'},
+{level:'hard',name:'Suguru Geto',anime:'Jujutsu Kaisen',search:'Suguru Getou'}
+];
