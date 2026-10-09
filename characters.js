@@ -3,6 +3,30 @@
 // level: "easy", "medium" oder "hard".
 const CHARACTERS = [
     {
+        name: "Kaido",
+        anime: "One Piece",
+        level: "medium",
+        image: "images/kaido.webp",
+    },
+    {
+        name: "Nina Tucker, Chimäre",
+        anime: "Fullmetal Alchemist",
+        level: "medium",
+        image: "images/nina_tucker.png",
+    },
+    {
+        name: "Hinata Shoyo",
+        anime: "Haikyuu!!",
+        level: "easy",
+        image: "images/hinata.png",
+    },
+    {
+        name: "Kakyoin",
+        anime: "JoJo's Bizarre Adventure",
+        level: "medium",
+        image: "images/kakyoin.webp",
+    },
+    {
         name: "Grell",
         anime: "Black Butler",
         level: "medium",
@@ -19,12 +43,6 @@ const CHARACTERS = [
         anime: "Howls moving Castle",
         level: "hard",
         image: "images/hin.png",
-    },
-    {
-        name: "Mononoke & Moro",
-        anime: "Mononoke Hime",
-        level: "medium",
-        image: "images/mononoke.png",
     },
     {
         name: "Pikachu",
@@ -80,12 +98,12 @@ const CHARACTERS = [
         level: "easy",
         image: "images/eren.jpeg",
     },
-    {
-        name: "Frieren",
-        anime: "Frieren",
-        level: "medium",
-        image: "images/frieren.jpeg",
-    },
+    // {
+    //     name: "Frieren",
+    //     anime: "Frieren",
+    //     level: "medium",
+    //     image: "images/frieren.jpeg",
+    // },
     {
         name: "Power",
         anime: "Chainsaw Man",
@@ -107,7 +125,7 @@ const CHARACTERS = [
     {
         name: "Reigen Arataka",
         anime: "Mob Psycho 100",
-        level: "medium",
+        level: "hard",
         image: "images/reigen.jpeg",
     },
     {
