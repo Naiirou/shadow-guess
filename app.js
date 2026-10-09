@@ -3,7 +3,7 @@
     const app = document.getElementById("app");
     const labels = { easy: "Leicht", medium: "Mittel", hard: "Schwer" };
     const icons = { easy: "✦", medium: "✦✦", hard: "✦✦✦" };
-    const settings = { max: 6, points: { easy: 1, medium: 2, hard: 3 } };
+    const settings = { max: 6, points: { easy: 100, medium: 250, hard: 500 } };
     let state = {
         screen: "home",
         history: [],
@@ -44,7 +44,7 @@
     function render() {
         const n = state.history.length;
         if (state.screen === "home") {
-            app.innerHTML = `<section class="hero"><p class="eyebrow">Anime Rallye // Station 01</p><h1>WHO'S THAT<br><span>CHARACTER?</span></h1><p>Wählt eine Schwierigkeit, erkennt die Silhouette und sammelt Punkte. Ihr habt ${settings.max} Versuche.</p></section><div class="stats"><div class="panel"><div class="stat-label">Versuche</div><div class="stat-val">${n} <span class="sub">/ ${settings.max}</span></div></div><div class="panel"><div class="stat-label">Punkte</div><div class="stat-val">${score()}</div></div></div><div class="row between"><strong>Schwierigkeit wählen</strong><span class="sub">${settings.max - n} übrig</span></div><div class="levels">${["easy", "medium", "hard"].map((l) => `<button class="level ${l}" data-level="${l}" ${n >= settings.max || !available(l).length ? "disabled" : ""}><span class="emoji">${icons[l]}</span><strong>${labels[l]}</strong><small>${settings.points[l]} ${settings.points[l] === 1 ? "Punkt" : "Punkte"} · ${available(l).length} übrig</small></button>`).join("")}</div><div class="row between"><strong>Eure Auswahl</strong><span class="sub">✓ richtig · ✕ falsch</span></div><div class="history">${Array.from(
+            app.innerHTML = `<section class="hero"><p class="eyebrow">Rallye // Station 04</p><h1>WHO'S THAT<br><span>CHARACTER?</span></h1><p>Wählt eine Schwierigkeit, erkennt die Silhouette und sammelt Punkte. Ihr habt ${settings.max} Versuche.</p></section><div class="stats"><div class="panel"><div class="stat-label">Versuche</div><div class="stat-val">${n} <span class="sub">/ ${settings.max}</span></div></div><div class="panel"><div class="stat-label">Punkte</div><div class="stat-val">${score()}</div></div></div><div class="row between"><strong>Schwierigkeit wählen</strong><span class="sub">${settings.max - n} übrig</span></div><div class="levels">${["easy", "medium", "hard"].map((l) => `<button class="level ${l}" data-level="${l}" ${n >= settings.max || !available(l).length ? "disabled" : ""}><span class="emoji">${icons[l]}</span><strong>${labels[l]}</strong><small>${settings.points[l]} ${settings.points[l] === 1 ? "Punkt" : "Punkte"} · ${available(l).length} übrig</small></button>`).join("")}</div><div class="row between"><strong>Eure Auswahl</strong><span class="sub">✓ richtig · ✕ falsch</span></div><div class="history">${Array.from(
                 { length: settings.max },
                 (_, i) => {
                     const r = state.history[i];
