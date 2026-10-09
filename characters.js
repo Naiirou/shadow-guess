@@ -3,6 +3,30 @@
 // level: "easy", "medium" oder "hard".
 const CHARACTERS = [
     {
+        name: "Grell",
+        anime: "Black Butler",
+        level: "medium",
+        image: "images/grell.webp",
+    },
+    {
+        name: "Hisoka",
+        anime: "Hunter x Hunter",
+        level: "easy",
+        image: "images/hisoka.png",
+    },
+    {
+        name: "Hin",
+        anime: "Howls moving Castle",
+        level: "hard",
+        image: "images/hin.png",
+    },
+    {
+        name: "Mononoke & Moro",
+        anime: "Mononoke Hime",
+        level: "medium",
+        image: "images/mononoke.png",
+    },
+    {
         name: "Pikachu",
         anime: "Pokémon",
         level: "easy",
