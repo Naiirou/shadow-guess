@@ -29,7 +29,7 @@ const CHARACTERS = [
     {
         name: "Grell",
         anime: "Black Butler",
-        level: "medium",
+        level: "hard",
         image: "images/grell.webp",
     },
     {
@@ -119,7 +119,7 @@ const CHARACTERS = [
     {
         name: "Kyojuro Rengoku",
         anime: "Demon Slayer",
-        level: "medium",
+        level: "easy",
         image: "images/rengoku.jpeg",
     },
     {
@@ -149,7 +149,7 @@ const CHARACTERS = [
     {
         name: "Mikasa Ackerman",
         anime: "Attack on Titan",
-        level: "medium",
+        level: "easy",
         image: "images/mikasa.jpeg",
     },
     {
@@ -164,12 +164,12 @@ const CHARACTERS = [
         level: "hard",
         image: "images/mechamaru.jpeg",
     },
-    {
-        name: "Fern",
-        anime: "Frieren",
-        level: "hard",
-        image: "images/fern.jpeg",
-    },
+    // {
+    //     name: "Fern",
+    //     anime: "Frieren",
+    //     level: "medium",
+    //     image: "images/fern.jpeg",
+    // },
     {
         name: "Shizuku Murasaki",
         anime: "Hunter × Hunter",
@@ -179,7 +179,7 @@ const CHARACTERS = [
     {
         name: "Mumen Rider",
         anime: "One Punch Man",
-        level: "hard",
+        level: "medium",
         image: "images/mumen_rider.jpeg",
     },
     {
