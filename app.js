@@ -1,28 +1,282 @@
-(()=>{'use strict';
-const app=document.getElementById('app');const labels={easy:'Leicht',medium:'Mittel',hard:'Schwer'};const icons={easy:'✦',medium:'✦✦',hard:'✦✦✦'};
-const settings={max:6,points:{easy:1,medium:2,hard:3}};
-let state={screen:'home',history:[],current:null,revealed:false,assets:{},silhouettes:{},busy:false,error:''};
-const key=c=>CHARACTERS.indexOf(c);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const score=()=>state.history.reduce((n,r)=>n+(r.correct?settings.points[r.char.level]:0),0);
-const available=l=>CHARACTERS.filter(c=>c.level===l&&!state.history.some(r=>r.char===c));
-const imgFor=c=>state.assets[key(c)]||c.image||'';
-const imgEl=(c,cl='')=>imgFor(c)?`<img class="${cl}" src="${esc(imgFor(c))}" alt="Charakterbild">`:`<span class="placeholder">Bild noch nicht geladen</span>`;
-function render(){const n=state.history.length;if(state.screen==='home'){
-app.innerHTML=`<section class="hero"><p class="eyebrow">Anime Rallye // Station 01</p><h1>WHO'S THAT<br><span>CHARACTER?</span></h1><p>Wählt eine Schwierigkeit, erkennt die Silhouette und sammelt Punkte. Ihr habt ${settings.max} Versuche.</p></section><div class="stats"><div class="panel"><div class="stat-label">Versuche</div><div class="stat-val">${n} <span class="sub">/ ${settings.max}</span></div></div><div class="panel"><div class="stat-label">Punkte</div><div class="stat-val">${score()}</div></div></div><div class="row between"><strong>Schwierigkeit wählen</strong><span class="sub">${settings.max-n} übrig</span></div><div class="levels">${['easy','medium','hard'].map(l=>`<button class="level ${l}" data-level="${l}" ${n>=settings.max||!available(l).length?'disabled':''}><span class="emoji">${icons[l]}</span><strong>${labels[l]}</strong><small>${settings.points[l]} ${settings.points[l]===1?'Punkt':'Punkte'} · ${available(l).length} übrig</small></button>`).join('')}</div><div class="row between"><strong>Eure Auswahl</strong><span class="sub">✓ richtig · ✕ falsch</span></div><div class="history">${Array.from({length:settings.max},(_,i)=>{const r=state.history[i];return r?`<div class="slot ${r.correct?'correct':'wrong'}" title="${esc(r.char.name)}">${imgEl(r.char)}<span class="flag">${r.correct?'✓':'✕'}</span></div>`:`<div class="slot">${String(i+1).padStart(2,'0')}</div>`}).join('')}</div><p class="hint">Die Bilder werden erst nach der Auswahl gezeigt. Eine Figur erscheint pro Gruppe nur einmal.</p><div class="row"><button class="btn secondary smallbtn" id="reset">↻ Neue Gruppe</button><button class="btn secondary smallbtn" id="prefetch">↻ Bilder laden</button></div><details class="settings"><summary>⚙ Spielregeln & Punkte ändern</summary><div class="settings-body"><label>Versuche <input type="number" id="max" min="1" max="27" value="${settings.max}"></label>${['easy','medium','hard'].map(l=>`<label>${labels[l]} <input type="number" data-point="${l}" min="0" max="100" value="${settings.points[l]}"> Punkte</label>`).join('')}<p class="file-help">Änderungen gelten sofort, auch für bereits beantwortete Fragen.</p></div></details>${state.error?`<div class="toast">${esc(state.error)}</div>`:''}`;
-app.querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>choose(b.dataset.level));document.getElementById('reset').onclick=reset;document.getElementById('prefetch').onclick=()=>loadAll(true);document.getElementById('max').onchange=e=>{settings.max=Math.max(1,Math.min(27,+e.target.value||6));render()};app.querySelectorAll('[data-point]').forEach(i=>i.onchange=e=>{settings.points[i.dataset.point]=Math.max(0,+e.target.value||0);render()});
-}else if(state.screen==='question'){const c=state.current;const image=imgFor(c);const sil=state.silhouettes[key(c)];app.innerHTML=`<section class="question"><div class="row between"><button class="iconbtn" id="back">← Zurück</button><span class="pill">${labels[c.level].toUpperCase()} · ${settings.points[c.level]} P.</span><span class="sub">${n+1} / ${settings.max}</span></div><h2>${state.revealed?'Auflösung':'Wer ist das?'}</h2><p>${state.revealed?'Hat die Gruppe richtig geraten?':'Schaut euch die Silhouette genau an.'}</p><div class="imagebox">${state.revealed?imgEl(c):sil?`<img src="${sil}" alt="Silhouette">`:image?imgEl(c,'silhouette'):`<div class="placeholder">Kein Bild verfügbar</div>`}${state.busy?'<div class="loading-overlay">Bild wird vorbereitet …</div>':''}</div>${state.revealed?`<div class="answer">${esc(c.name)}</div><div class="answer-sub">${esc(c.anime)}</div><div class="actions"><button class="btn bad wide" id="wrong">✕ Falsch</button><button class="btn good wide" id="right">✓ Richtig</button></div>`:`<div class="actions"><button class="btn" id="reveal" ${state.busy?'disabled':''}>◉ Reveal</button></div>`}<div class="upload"><div class="file-help">Falsches oder fehlendes Bild? Eigenes Bild für diesen Charakter auswählen (bleibt für diese Sitzung gespeichert).</div><input type="file" id="upload" accept="image/*"></div>${c.note?`<p class="warning" style="font-size:12px">Hinweis: ${esc(c.note)}</p>`:''}</section>`;
-document.getElementById('back').onclick=()=>{state.screen='home';state.current=null;render()};document.getElementById('upload').onchange=upload;const rev=document.getElementById('reveal');if(rev)rev.onclick=()=>{state.revealed=true;render()};const right=document.getElementById('right');if(right)right.onclick=()=>finish(true);const wrong=document.getElementById('wrong');if(wrong)wrong.onclick=()=>finish(false);
-}else{app.innerHTML=`<section class="results"><p class="eyebrow">Runde abgeschlossen</p><h1>GAME <span>OVER.</span></h1><div class="panel"><div class="stat-label">Gesamtpunktzahl</div><div class="stat-val">${score()} Punkte</div><p>${state.history.filter(r=>r.correct).length} von ${state.history.length} Figuren erkannt</p></div><h2>Eure Antworten</h2><div class="results-grid">${state.history.map(r=>`<div class="result-card">${imgEl(r.char)}<strong>${esc(r.char.name)}</strong><small>${esc(r.char.anime)}</small><div class="status ${r.correct?'green':'red'}">${r.correct?'✓ Richtig':'✕ Falsch'} · ${r.correct?settings.points[r.char.level]:0} P.</div></div>`).join('')}</div><div class="actions" style="margin-top:28px"><button class="btn" id="again">↻ Nächste Gruppe</button></div></section>`;document.getElementById('again').onclick=reset;}}
-function choose(l){const pool=available(l);if(!pool.length)return;state.current=pool[Math.floor(Math.random()*pool.length)];state.revealed=false;state.screen='question';render();prepareSilhouette(state.current)}
-function finish(correct){state.history.push({char:state.current,correct});state.current=null;state.screen=state.history.length>=settings.max?'results':'home';render()}
-function reset(){if(state.history.length&&!confirm('Neue Gruppe starten? Die bisherigen Antworten werden zurückgesetzt.'))return;state.history=[];state.current=null;state.screen='home';state.error='';render()}
-function upload(e){const f=e.target.files[0];if(!f)return;const c=state.current;const url=URL.createObjectURL(f);state.assets[key(c)]=url;delete state.silhouettes[key(c)];prepareSilhouette(c)}
-// Jikan API: Nur Charakterbilder werden geladen. Kein API-Key oder Backend erforderlich.
-async function findImage(c){if(imgFor(c))return imgFor(c);try{const response=await fetch('https://api.jikan.moe/v4/characters?q='+encodeURIComponent(c.search||c.name)+'&limit=10');if(!response.ok)throw Error('HTTP '+response.status);const json=await response.json();const rows=json.data||[];const first=(c.search||c.name).toLowerCase().split(' ')[0];const match=rows.find(x=>x.name.toLowerCase().includes(first))||rows[0];const url=match?.images?.jpg?.image_url||match?.images?.webp?.image_url;if(url){state.assets[key(c)]=url;return url}}catch(e){console.warn('Bild nicht geladen:',c.name,e)}return ''}
-// Leinwand-Maske: Helle, zusammenhängende Randflächen werden transparent.
-// Anders als CSS brightness(0) verhindert das bei vielen Bildern schwarze Rechtecke.
-async function makeSilhouette(url){const image=new Image();image.crossOrigin='anonymous';image.src=url;await image.decode();const w=Math.min(image.naturalWidth,650),h=Math.round(image.naturalHeight*w/image.naturalWidth);const cv=document.createElement('canvas');cv.width=w;cv.height=h;const ctx=cv.getContext('2d',{willReadFrequently:true});ctx.drawImage(image,0,0,w,h);const im=ctx.getImageData(0,0,w,h),d=im.data;const n=w*h,visited=new Uint8Array(n),queue=new Int32Array(n);let head=0,tail=0;function bright(i){const p=i*4;return d[p+3]<32||(d[p]>225&&d[p+1]>225&&d[p+2]>225)||(Math.min(d[p],d[p+1],d[p+2])>195&&Math.max(d[p],d[p+1],d[p+2])-Math.min(d[p],d[p+1],d[p+2])<18)}function push(i){if(!visited[i]&&bright(i)){visited[i]=1;queue[tail++]=i}}for(let x=0;x<w;x++){push(x);push((h-1)*w+x)}for(let y=0;y<h;y++){push(y*w);push(y*w+w-1)}while(head<tail){const i=queue[head++],x=i%w,y=(i/w)|0;if(x>0)push(i-1);if(x<w-1)push(i+1);if(y>0)push(i-w);if(y<h-1)push(i+w)}for(let i=0;i<n;i++){const p=i*4;if(visited[i]||d[p+3]<32){d[p+3]=0}else{d[p]=0;d[p+1]=0;d[p+2]=0;d[p+3]=255}}ctx.putImageData(im,0,0);return cv.toDataURL('image/png')}
-async function prepareSilhouette(c){const id=key(c);state.busy=true;render();const url=await findImage(c);if(state.current!==c)return;if(url){try{state.silhouettes[id]=await makeSilhouette(url)}catch(e){console.warn('Bildbearbeitung blockiert (CORS), CSS-Fallback:',e)}}state.busy=false;render()}
-async function loadAll(force=false){state.error='Bilder werden im Hintergrund geladen. Bei API-Limits kann das etwas dauern.';render();for(const c of CHARACTERS){if(force&&!(c.image||'').length)delete state.assets[key(c)];await findImage(c);await new Promise(r=>setTimeout(r,460))}state.error='Bildsuche abgeschlossen. Falls eine Figur nicht stimmt, kannst du im Fragemodus ein eigenes Bild hochladen.';render()}
-document.getElementById('fullscreen').onclick=()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen?.()};render();loadAll(false);
+(() => {
+    "use strict";
+    const app = document.getElementById("app");
+    const labels = { easy: "Leicht", medium: "Mittel", hard: "Schwer" };
+    const icons = { easy: "✦", medium: "✦✦", hard: "✦✦✦" };
+    const settings = { max: 6, points: { easy: 1, medium: 2, hard: 3 } };
+    let state = {
+        screen: "home",
+        history: [],
+        current: null,
+        revealed: false,
+        assets: {},
+        silhouettes: {},
+        busy: false,
+        error: "",
+    };
+    const key = (c) => CHARACTERS.indexOf(c);
+    const esc = (s) =>
+        String(s ?? "").replace(
+            /[&<>"']/g,
+            (c) =>
+                ({
+                    "&": "&amp;",
+                    "<": "&lt;",
+                    ">": "&gt;",
+                    '"': "&quot;",
+                    "'": "&#39;",
+                })[c],
+        );
+    const score = () =>
+        state.history.reduce(
+            (n, r) => n + (r.correct ? settings.points[r.char.level] : 0),
+            0,
+        );
+    const available = (l) =>
+        CHARACTERS.filter(
+            (c) => c.level === l && !state.history.some((r) => r.char === c),
+        );
+    const imgFor = (c) => state.assets[key(c)] || c.image || "";
+    const imgEl = (c, cl = "") =>
+        imgFor(c)
+            ? `<img class="${cl}" src="${esc(imgFor(c))}" alt="Charakterbild">`
+            : `<span class="placeholder">Bild noch nicht geladen</span>`;
+    function render() {
+        const n = state.history.length;
+        if (state.screen === "home") {
+            app.innerHTML = `<section class="hero"><p class="eyebrow">Anime Rallye // Station 01</p><h1>WHO'S THAT<br><span>CHARACTER?</span></h1><p>Wählt eine Schwierigkeit, erkennt die Silhouette und sammelt Punkte. Ihr habt ${settings.max} Versuche.</p></section><div class="stats"><div class="panel"><div class="stat-label">Versuche</div><div class="stat-val">${n} <span class="sub">/ ${settings.max}</span></div></div><div class="panel"><div class="stat-label">Punkte</div><div class="stat-val">${score()}</div></div></div><div class="row between"><strong>Schwierigkeit wählen</strong><span class="sub">${settings.max - n} übrig</span></div><div class="levels">${["easy", "medium", "hard"].map((l) => `<button class="level ${l}" data-level="${l}" ${n >= settings.max || !available(l).length ? "disabled" : ""}><span class="emoji">${icons[l]}</span><strong>${labels[l]}</strong><small>${settings.points[l]} ${settings.points[l] === 1 ? "Punkt" : "Punkte"} · ${available(l).length} übrig</small></button>`).join("")}</div><div class="row between"><strong>Eure Auswahl</strong><span class="sub">✓ richtig · ✕ falsch</span></div><div class="history">${Array.from(
+                { length: settings.max },
+                (_, i) => {
+                    const r = state.history[i];
+                    return r
+                        ? `<div class="slot ${r.correct ? "correct" : "wrong"}" title="${esc(r.char.name)}">${imgEl(r.char)}<span class="flag">${r.correct ? "✓" : "✕"}</span></div>`
+                        : `<div class="slot">${String(i + 1).padStart(2, "0")}</div>`;
+                },
+            ).join(
+                "",
+            )}</div><div class="row"><button class="btn secondary smallbtn" id="reset">↻ Neue Gruppe</button></div><details class="settings"><summary>⚙ Spielregeln & Punkte ändern</summary><div class="settings-body"><label>Versuche <input type="number" id="max" min="1" max="27" value="${settings.max}"></label>${["easy", "medium", "hard"].map((l) => `<label>${labels[l]} <input type="number" data-point="${l}" min="0" max="100" value="${settings.points[l]}"> Punkte</label>`).join("")}<p class="file-help">Änderungen gelten sofort, auch für bereits beantwortete Fragen.</p></div></details>${state.error ? `<div class="toast">${esc(state.error)}</div>` : ""}`;
+            app.querySelectorAll("[data-level]").forEach(
+                (b) => (b.onclick = () => choose(b.dataset.level)),
+            );
+            document.getElementById("reset").onclick = reset;
+            document.getElementById("max").onchange = (e) => {
+                settings.max = Math.max(1, Math.min(27, +e.target.value || 6));
+                render();
+            };
+            app.querySelectorAll("[data-point]").forEach(
+                (i) =>
+                    (i.onchange = (e) => {
+                        settings.points[i.dataset.point] = Math.max(
+                            0,
+                            +e.target.value || 0,
+                        );
+                        render();
+                    }),
+            );
+        } else if (state.screen === "question") {
+            const c = state.current;
+            const image = imgFor(c);
+            const sil = state.silhouettes[key(c)];
+            app.innerHTML = `<section class="question"><div class="question-toolbar"><button class="iconbtn" id="back">← Zurück</button><span class="pill">${labels[c.level].toUpperCase()} · ${settings.points[c.level]} P.</span><span class="sub">${n + 1} / ${settings.max}</span></div><h2>${state.revealed ? "Auflösung" : "Wer ist das?"}</h2><div class="imagebox">${state.revealed ? imgEl(c) : sil ? `<img src="${sil}" alt="Silhouette">` : image ? imgEl(c, "silhouette") : `<div class="placeholder">Kein Bild verfügbar</div>`}${state.busy ? '<div class="loading-overlay">Bild wird vorbereitet …</div>' : ""}</div><div class="answer-details" aria-live="polite"><div class="answer">${esc(c.name)}</div><div class="answer-sub">${esc(c.anime)}</div></div>${state.revealed ? `<div class="actions"><button class="btn bad wide" id="wrong">✕ Falsch</button><button class="btn good wide" id="right">✓ Richtig</button></div>` : `<div class="actions"><button class="btn" id="reveal" ${state.busy ? "disabled" : ""}>◉ Reveal</button></div>`}</section>`;
+            if (state.revealed) {
+                requestAnimationFrame(() =>
+                    requestAnimationFrame(() =>
+                        app
+                            .querySelector(".answer-details")
+                            ?.classList.add("is-visible"),
+                    ),
+                );
+            }
+            document.getElementById("back").onclick = () => {
+                state.screen = "home";
+                state.current = null;
+                render();
+            };
+            const rev = document.getElementById("reveal");
+            if (rev)
+                rev.onclick = () => {
+                    if (state.busy || state.revealed) return;
+                    const box = app.querySelector(".question .imagebox");
+                    const source = imgFor(c);
+                    if (!box || !source) {
+                        state.revealed = true;
+                        render();
+                        return;
+                    }
+                    rev.disabled = true;
+                    const color = document.createElement("img");
+                    color.className = "reveal-color";
+                    color.alt = "Auflösung";
+                    const current = c;
+                    const finishReveal = () => {
+                        if (
+                            state.screen !== "question" ||
+                            state.current !== current
+                        )
+                            return;
+                        state.revealed = true;
+                        render();
+                    };
+                    let started = false;
+                    const start = () => {
+                        if (started) return;
+                        started = true;
+
+                        requestAnimationFrame(() =>
+                            requestAnimationFrame(() =>
+                                color.classList.add("is-visible"),
+                            ),
+                        );
+                        setTimeout(
+                            finishReveal,
+                            window.matchMedia(
+                                "(prefers-reduced-motion: reduce)",
+                            ).matches
+                                ? 30
+                                : 700,
+                        );
+                    };
+                    color.onload = start;
+                    color.onerror = finishReveal;
+                    box.appendChild(color);
+                    color.src = source;
+                    if (color.complete && color.naturalWidth) start();
+                };
+            const right = document.getElementById("right");
+            if (right) right.onclick = () => finish(true);
+            const wrong = document.getElementById("wrong");
+            if (wrong) wrong.onclick = () => finish(false);
+        } else {
+            app.innerHTML = `<section class="results"><p class="eyebrow">Runde abgeschlossen</p><h1>GAME <span>OVER.</span></h1><div class="panel"><div class="stat-label">Gesamtpunktzahl</div><div class="stat-val">${score()} Punkte</div><p>${state.history.filter((r) => r.correct).length} von ${state.history.length} Figuren erkannt</p></div><h2>Eure Antworten</h2><div class="results-grid">${state.history.map((r) => `<div class="result-card">${imgEl(r.char)}<strong>${esc(r.char.name)}</strong><small>${esc(r.char.anime)}</small><div class="status ${r.correct ? "green" : "red"}">${r.correct ? "✓ Richtig" : "✕ Falsch"} · ${r.correct ? settings.points[r.char.level] : 0} P.</div></div>`).join("")}</div><div class="actions" style="margin-top:28px"><button class="btn" id="again">↻ Nächste Gruppe</button></div></section>`;
+            document.getElementById("again").onclick = reset;
+        }
+    }
+    function choose(l) {
+        const pool = available(l);
+        if (!pool.length) return;
+        state.current = pool[Math.floor(Math.random() * pool.length)];
+        state.revealed = false;
+        state.screen = "question";
+        render();
+        prepareSilhouette(state.current);
+    }
+    function finish(correct) {
+        state.history.push({ char: state.current, correct });
+        state.current = null;
+        state.screen =
+            state.history.length >= settings.max ? "results" : "home";
+        render();
+    }
+    function reset() {
+        if (
+            state.history.length &&
+            !confirm(
+                "Neue Gruppe starten? Die bisherigen Antworten werden zurückgesetzt.",
+            )
+        )
+            return;
+        state.history = [];
+        state.current = null;
+        state.screen = "home";
+        state.error = "";
+        render();
+    }
+
+    // Bilder kommen aus dem lokalen images/-Ordner; kein Netzwerkzugriff nötig.
+    async function findImage(c) {
+        return imgFor(c);
+    }
+    // Leinwand-Maske: Helle, zusammenhängende Randflächen werden transparent.
+    // Anders als CSS brightness(0) verhindert das bei vielen Bildern schwarze Rechtecke.
+    async function makeSilhouette(url) {
+        const image = new Image();
+        image.crossOrigin = "anonymous";
+        image.src = url;
+        await image.decode();
+        const w = Math.min(image.naturalWidth, 650),
+            h = Math.round((image.naturalHeight * w) / image.naturalWidth);
+        const cv = document.createElement("canvas");
+        cv.width = w;
+        cv.height = h;
+        const ctx = cv.getContext("2d", { willReadFrequently: true });
+        ctx.drawImage(image, 0, 0, w, h);
+        const im = ctx.getImageData(0, 0, w, h),
+            d = im.data;
+        const n = w * h,
+            visited = new Uint8Array(n),
+            queue = new Int32Array(n);
+        let head = 0,
+            tail = 0;
+        function bright(i) {
+            const p = i * 4;
+            return (
+                d[p + 3] < 32 ||
+                (d[p] > 225 && d[p + 1] > 225 && d[p + 2] > 225) ||
+                (Math.min(d[p], d[p + 1], d[p + 2]) > 195 &&
+                    Math.max(d[p], d[p + 1], d[p + 2]) -
+                        Math.min(d[p], d[p + 1], d[p + 2]) <
+                        18)
+            );
+        }
+        function push(i) {
+            if (!visited[i] && bright(i)) {
+                visited[i] = 1;
+                queue[tail++] = i;
+            }
+        }
+        for (let x = 0; x < w; x++) {
+            push(x);
+            push((h - 1) * w + x);
+        }
+        for (let y = 0; y < h; y++) {
+            push(y * w);
+            push(y * w + w - 1);
+        }
+        while (head < tail) {
+            const i = queue[head++],
+                x = i % w,
+                y = (i / w) | 0;
+            if (x > 0) push(i - 1);
+            if (x < w - 1) push(i + 1);
+            if (y > 0) push(i - w);
+            if (y < h - 1) push(i + w);
+        }
+        for (let i = 0; i < n; i++) {
+            const p = i * 4;
+            if (visited[i] || d[p + 3] < 32) {
+                d[p + 3] = 0;
+            } else {
+                d[p] = 0;
+                d[p + 1] = 0;
+                d[p + 2] = 0;
+                d[p + 3] = 255;
+            }
+        }
+        ctx.putImageData(im, 0, 0);
+        return cv.toDataURL("image/png");
+    }
+    async function prepareSilhouette(c) {
+        const id = key(c);
+        state.busy = true;
+        render();
+        const url = await findImage(c);
+        if (state.current !== c) return;
+        if (url) {
+            try {
+                state.silhouettes[id] = await makeSilhouette(url);
+            } catch (e) {
+                console.warn(
+                    "Bildbearbeitung blockiert (CORS), CSS-Fallback:",
+                    e,
+                );
+            }
+        }
+        state.busy = false;
+        render();
+    }
+    document.getElementById("fullscreen").onclick = () => {
+        if (document.fullscreenElement) document.exitFullscreen();
+        else document.documentElement.requestFullscreen?.();
+    };
+    render();
 })();
